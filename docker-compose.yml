@@ -1,0 +1,77 @@
+version: "3.7"
+services:
+  authorisation-server-php:
+    build:
+      args:
+        user: adam
+        uid: 1000
+      context: ./authorisation-server
+      dockerfile: Dockerfile
+    image: authorisation-server
+    container_name: authorisation-server
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./authorisation-server/:/var/www
+    networks:
+      - example
+
+  resource-server-php:
+    build:
+      args:
+        user: adam
+        uid: 1000
+      context: ./resource-server
+      dockerfile: Dockerfile
+    image: resource-server
+    container_name: resource-server
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./resource-server/:/var/www
+    networks:
+      - example
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    # volumes:
+    #   - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - example
+
+  authorisation-server-nginx:
+    image: nginx:alpine
+    container_name: authorisation-server-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./authorisation-server/:/var/www
+      - ./docker/nginx/authorisation/:/etc/nginx/conf.d
+    networks:
+      - example
+
+  resource-server-nginx:
+    image: nginx:alpine
+    container_name: resource-server-nginx
+    restart: unless-stopped
+    ports:
+      - 8001:80
+    volumes:
+      - ./resource-server/:/var/www
+      - ./docker/nginx/resource/:/etc/nginx/conf.d
+    networks:
+      - example
+
+networks:
+  example:
+    driver: bridge
