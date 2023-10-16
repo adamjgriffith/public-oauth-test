@@ -43,8 +43,9 @@ services:
       MYSQL_USER: ${DB_USERNAME}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
-    # volumes:
-    #   - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    volumes:
+      - ./docker/mysql/data/:/var/lib/mysql
+      - ./docker/mysql/init/:/docker-entrypoint-initdb.d
     networks:
       - example
 
